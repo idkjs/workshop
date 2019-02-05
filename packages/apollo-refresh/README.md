@@ -100,3 +100,44 @@ Running this query return user ids but all names are Hans because when we call U
 }
 ```
 
+## Context Arg
+
+Look at the other arguments in the function signature of a GraphQL resolver:
+
+```js
+(parent, args, context, info) => { ... }
+```
+
+The context argument is the third argument in the resolver function used to inject dependencies from the outside to the resolver function. Assume the signed-in user is known to the outside world of your GraphQL layer because a request to your GraphQL server is made and the authenticated user is retrieved from elsewhere. You might decide to inject this signed in user to your resolvers for application functionality, which is done with with the me user for the me field. Remove the declaration of the me user (let me = ...) and pass it in the context object when Apollo Server gets initialized instead:
+
+```js
+const server = new ApolloServer({
+  typeDefs: schema,
+  resolvers,
+  context: {
+    me: users[1],
+  },
+});
+```
+
+Next, access it in the resolver’s function signature as a third argument, which gets destructured into the me property from the context object.
+
+```js
+const resolvers = {
+  Query: {
+    users: () => {
+      return Object.values(users);
+    },
+    user: (parent, { id }) => {
+      return users[id];
+    },
+    me: (parent, args, { me }) => {
+      return me;
+    },
+  },
+};
+```
+
+The context should be the same for all resolvers now. Every resolver that needs to access the context, or in this case the me user, can do so using the third argument of the resolver function.
+
+The fourth argument in a resolver function, the info argument, isn’t used very often, because it only gives you internal information about the GraphQL request. It can be used for debugging, error handling, advanced monitoring, and tracking. You don’t need to worry about it for now.
