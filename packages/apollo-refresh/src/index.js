@@ -1,8 +1,9 @@
+import cors from 'cors';
 import express from 'express';
 import { ApolloServer, gql } from 'apollo-server-express';
 
 const app = express();
-
+app.use(cors());
 const schema = gql`
   type Query {
     me: User
