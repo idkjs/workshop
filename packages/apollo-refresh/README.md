@@ -24,7 +24,7 @@ Start server and run:
 
  CORS is needed to perform HTTP requests from another domain than your server domain to your server. Otherwise you may run into cross-origin resource sharing errors for your GraphQL server.
 
- ## User Data
+## User Data
 
 Refactor resolver to return data based on user's id.
 
@@ -40,9 +40,10 @@ const resolvers = {
   },
 };
 ```
+
 Test Query:
 
-```gql
+```graphql
 {
   user(id: "2") {
     username
@@ -51,4 +52,14 @@ Test Query:
     username
   }
 }
+```
+
+## All users
+
+test query:
+
+```graphql
+users {
+    username
+  }
 ```
