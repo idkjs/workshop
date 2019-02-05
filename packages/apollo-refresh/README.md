@@ -141,3 +141,5 @@ const resolvers = {
 The context should be the same for all resolvers now. Every resolver that needs to access the context, or in this case the me user, can do so using the third argument of the resolver function.
 
 The fourth argument in a resolver function, the info argument, isn’t used very often, because it only gives you internal information about the GraphQL request. It can be used for debugging, error handling, advanced monitoring, and tracking. You don’t need to worry about it for now.
+
+## Apollo Server: Type Relationships
