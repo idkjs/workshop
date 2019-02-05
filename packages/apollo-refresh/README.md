@@ -63,3 +63,40 @@ users {
     username
   }
 ```
+
+## Overiding Fields with Top Level resolver
+
+```js
+  User: {
+    username: () => 'Hans',
+  },
+```
+
+Running this query return user ids but all names are Hans because when we call User which resolves to list of User type, then our resolver call the User resolver what that we defined.
+
+```graphql
+# query
+{
+  users {
+    username
+    id
+  }
+}
+
+# query result
+{
+  "data": {
+    "users": [
+      {
+        "username": "Hans",
+        "id": "1"
+      },
+      {
+        "username": "Hans",
+        "id": "2"
+      }
+    ]
+  }
+}
+```
+

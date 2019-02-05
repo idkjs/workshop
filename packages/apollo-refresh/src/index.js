@@ -40,6 +40,9 @@ const resolvers = {
       return me;
     },
   },
+  User: {
+    username: () => 'Hans',
+  },
 };
 
 const server = new ApolloServer({
