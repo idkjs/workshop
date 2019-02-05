@@ -73,11 +73,7 @@ const resolvers = {
     },
   },
   Mutation: {
-    createMessage: (parent, {
-      text
-    }, {
-      me
-    }) => {
+    createMessage: (parent, {text}, {me}) => {
       const id = uuidv4();
       const message = {
         id,
@@ -87,6 +83,15 @@ const resolvers = {
       messages[id] = message;
       users[me.id].messageIds.push(id);
       return message;
+    },
+    deleteMessage: (parent, { id }) => {
+      const { [id]: message, ...otherMessages } = messages;
+
+      if (!message) {
+        return false;
+      }
+      messages = otherMessages;
+      return true;
     },
   },
 };
