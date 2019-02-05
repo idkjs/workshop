@@ -1,0 +1,42 @@
+Arguments: 
+  /usr/local/bin/node /Users/prisc_000/.npm-global/bin/yarn add dotenv
+
+PATH: 
+  /Users/prisc_000/.opam/default/bin:/Users/prisc_000/Library/Android/sdk/emulator:/Users/prisc_000/Library/Android/sdk/tools:/Users/prisc_000/Library/Android/sdk/platform-tools:/Users/prisc_000/.npm-global/bin:/Users/prisc_000/bin:/usr/local/bin:/usr/local/opt/nss/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/prisc_000/kotlin-native-macos-0.9.3/bin:/usr/local/go/bin:/Applications/Postgres.app/Contents/Versions/latest/bin:/Users/prisc_000/fnm:/Users/prisc_000/.npm-global/bin:/Users/prisc_000/bin:/usr/local/bin:/usr/local/opt/nss/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/prisc_000/kotlin-native-macos-0.9.3/bin:/usr/local/go/bin:/Applications/Postgres.app/Contents/Versions/latest/bin:/Users/prisc_000/.fzf/bin
+
+Yarn version: 
+  1.12.3
+
+Node version: 
+  10.8.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  SyntaxError: /Users/prisc_000/Downloads/reason-workshop-2-master/packages/apollo-refresh/package.json: Unexpected token } in JSON at position 238
+      at JSON.parse (<anonymous>)
+      at /Users/prisc_000/.npm-global/lib/node_modules/yarn/lib/cli.js:1631:59
+      at Generator.next (<anonymous>)
+      at step (/Users/prisc_000/.npm-global/lib/node_modules/yarn/lib/cli.js:304:30)
+      at /Users/prisc_000/.npm-global/lib/node_modules/yarn/lib/cli.js:315:13
+
+npm manifest: 
+  {
+    "name": "apollo-refresh",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "dependencies": {
+      "apollo-server": "^2.3.3",
+      "apollo-server-express": "^2.3.3",
+      "express": "^4.16.4",
+      "graphql": "^14.1.1",
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

@@ -1,0 +1,277 @@
+Last login: Mon Feb  4 15:31:37 on ttys000
+➜  Downloads cat current_weather.js
+PK
+BvDNcurrent_weather/PK
+BvDN�u����current_weather/README.md# CurrentWeather
+
+
+
+This project was created with [Apollo Launchpad](https://launchpad.graphql.com)
+
+You can see the original pad at [https://launchpad.graphql.com/5rrx10z19](https://launchpad.graphql.com/5rrx10z19)
+
+### Quick start guide
+
+```bash
+npm install
+export google=<your value here>
+export darksky=<your value here>
+npm start
+```
+
+
+### App secrets
+
+This pad contains some secret keys which you will need to provide as environment variables in order to run it locally (the secret values have been removed for your security). Secret values are often used for things like database passwords and private cryptographic keys.
+
+Here is a list of the secrets in this project for which you will need to provide values: google, darksky.
+
+You can set them by exporting them as environment variables in your shell:
+
+```sh
+export google=<your value here>
+export darksky=<your value here>
+```
+
+
+Happy hacking!
+
+The Apollo team :)
+PK
+BvDN��ϧcurrent_weather/package.json{
+  "name": "current_weather",
+  "version": "0.1.0",
+  "description": "",
+  "main": "./src/server.js",
+  "scripts": {
+    "start": "nodemon ./src/server.js --exec babel-node -e js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "devDependencies": {
+    "babel-cli": "^6.24.0",
+    "babel-plugin-transform-async-generator-functions": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-latest": "^6.23.0",
+    "nodemon": "^1.11.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "graphql": "^0.9.6",
+    "graphql-tools": "^0.11.0",
+    "node-geocoder": "^3.16.0",
+    "request": "^2.81.0",
+    "apollo-server-express": "^1.2.0"
+  }
+}PK
+BvDNt�Ӕ�current_weather/.babelrc{
+  presets: ['latest'],
+  plugins: [
+    'transform-runtime',
+    'transform-async-generator-functions',
+    'transform-object-rest-spread',
+  ],
+}PK
+BvDNcurrent_weather/src/PK
+BvDNY�ڝ>
+>
+current_weather/src/schema.js// Makes use of Google Maps geocoding API and Dark Sky weather API
+// Get API keys at https://console.developers.google.com & https://darksky.net/dev/
+// and add them to the server secrets
+// Feel free to reach out to me on Twitter @mattdionis with any questions!
+import { makeExecutableSchema } from 'graphql-tools';
+import NodeGeocoder from 'node-geocoder';
+import request from 'request';
+
+// Set the baseUrl and urlParams for Dark Sky API call
+const baseUrl = 'https://api.darksky.net/forecast/';
+const urlParams = '?units=us&exclude=minutely,hourly,daily,flags';
+const mapLinkBase = 'https://www.google.com/maps/?q=';
+
+// Geocode a place through node-geocoder and the Google Maps API
+// https://github.com/nchaulet/node-geocoder
+function getLocation(apiKey, place) {
+  const options = {
+    provider: 'google',
+    apiKey
+  };
+
+  const geocoder = NodeGeocoder(options);
+
+  return new Promise((resolve, reject) => {
+    geocoder.geocode(place, (err, res) => {
+      if (err) {
+        reject(err);
+      }
+      const city = res[0].city;
+      const country = res[0].country;
+      const lat = res[0].latitude;
+      const lng = res[0].longitude;
+      resolve({
+        city,
+        country,
+        coords: [lat, lng],
+        mapLink: `${mapLinkBase}${lat},${lng}`
+      });
+    });
+  });
+}
+
+// Pass the geographic coordinates of the location to the Dark Sky API to get current conditions
+function getWeather(apiKey, coords) {
+  return new Promise((resolve, reject) => {
+    request(`${baseUrl}${apiKey}/${coords[0]},${coords[1]}${urlParams}`, (error, response, body) => {
+      if (error) {
+        reject(error);
+      }
+      const data = JSON.parse(body);
+      const summary = data.currently.summary;
+      const temperature = data.currently.temperature;
+      resolve({
+        summary,
+        temperature,
+        coords
+      });
+    });
+  });
+}
+
+const typeDefs = `
+  type Query {
+    location(place: String!): Location
+  }
+
+  type Location {
+    city: String
+    country: String
+    coords: [Float]
+    mapLink: String
+    weather: Weather
+  }
+
+  type Weather {
+    summary: String
+    temperature: Float
+    coords: [Float]
+  }
+`;
+
+// Pass in the Google and Dark Sky API keys
+const resolvers = {
+  Query: {
+    location(root, args, context) {
+      return getLocation(context.secrets.google, args.place);
+    }
+  },
+  Location: {
+    weather(root, args, context) {
+      return getWeather(context.secrets.darksky, root.coords);
+    }
+  }
+};
+
+export const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+});
+
+export function context(headers, secrets) {
+  return {
+    headers,
+    secrets
+  };
+};
+PK
+BvDN���{{current_weather/src/server.jsimport express from 'express';
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import bodyParser from 'body-parser';
+
+import * as Schema from './schema';
+
+const PORT = 3000;
+const server = express();
+
+if (typeof process.env.google === 'undefined') {
+  console.warn('WARNING: process.env.google is not defined. Check README.md for more information');
+}
+if (typeof process.env.darksky === 'undefined') {
+  console.warn('WARNING: process.env.darksky is not defined. Check README.md for more information');
+}
+
+const schemaFunction =
+  Schema.schemaFunction ||
+  function() {
+    return Schema.schema;
+  };
+let schema;
+const rootFunction =
+  Schema.rootFunction ||
+  function() {
+    return schema.rootValue;
+  };
+const contextFunction =
+  Schema.context ||
+  function(headers, secrets) {
+    return Object.assign(
+      {
+        headers: headers,
+      },
+      secrets
+    );
+  };
+
+server.use('/graphql', bodyParser.json(), graphqlExpress(async (request) => {
+  if (!schema) {
+    schema = schemaFunction(process.env)
+  }
+  const context = await contextFunction(request.headers, process.env);
+  const rootValue = await rootFunction(request.headers, process.env);
+
+  return {
+    schema: await schema,
+    rootValue,
+    context,
+    tracing: true,
+  };
+}));
+
+server.use('/graphiql', graphiqlExpress({
+  endpointURL: '/graphql',
+  query: `query ($place1: String!, $place2: String!, $place3: String!) {
+  Fenway: location(place: $place1) {
+    ...locationFields
+  }
+  BigBen: location(place: $place2) {
+    ...locationFields
+  }
+  Pyramids: location(place: $place3) {
+    ...locationFields
+  }
+}
+
+fragment locationFields on Location {
+  country
+  mapLink
+  weather {
+    summary
+    temperature
+  }
+}
+`,
+}));
+
+server.listen(PORT, () => {
+  console.log(`GraphQL Server is now running on http://localhost:${PORT}/graphql`);
+  console.log(`View GraphiQL at http://localhost:${PORT}/graphiql`);
+});PK
+BvDNcurrent_weather/PK
+BvDN�u����.current_weather/README.mdPK
+BvDN��ϧcurrent_weather/package.jsonPK
+BvDNt�Ӕ�Scurrent_weather/.babelrcPK
+BvDcurrent_weather/src/PK
+BvDNY�ڝ>
+>
+current_weather/src/schema.jsPK
+BvDN���{{�current_weather/src/server.jsPK�~%

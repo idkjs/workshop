@@ -1,0 +1,6 @@
+packages/weather-gql/.env
+packages/weather-gql/Procfile
+packages/weather-api/now-secrets.json
+packages/app-final-graphql-routing/now-secrets.json
+packages/apollo-refresh/node_modules
+node_modules
