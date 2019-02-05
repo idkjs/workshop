@@ -1,5 +1,7 @@
 import cors from 'cors';
 import express from 'express';
+import uuidv4 from 'uuid/v4';
+import schema from "./schema"
 import {
   ApolloServer,
   gql
@@ -7,26 +9,6 @@ import {
 
 const app = express();
 app.use(cors());
-const schema = gql`
-  type Query {
-    users: [User!]
-    me: User
-    user(id: ID!): User
-    messages: [Message!]!
-    message(id: ID!): Message!
-  }
-
-  type User {
-    id: ID!
-    username: String!
-    messages: [Message!]
-  }
-  type Message {
-    id: ID!
-    text: String!
-    user: User!
-  }
-`;
 
 let users = {
   1: {
@@ -64,13 +46,17 @@ const resolvers = {
     }) => {
       return users[id];
     },
-    me: (parent, args, { me }) => {
+    me: (parent, args, {
+      me
+    }) => {
       return me;
     },
     messages: () => {
       return Object.values(messages);
     },
-    message: (parent, { id }) => {
+    message: (parent, {
+      id
+    }) => {
       return messages[id];
     },
   },
@@ -86,13 +72,23 @@ const resolvers = {
       );
     },
   },
-
-  // Message: {
-  //   user: (parent, args, { me }) => {
-  //     return me;
-  //   },
-  // },
-
+  Mutation: {
+    createMessage: (parent, {
+      text
+    }, {
+      me
+    }) => {
+      const id = uuidv4();
+      const message = {
+        id,
+        text,
+        userId: me.id,
+      };
+      messages[id] = message;
+      users[me.id].messageIds.push(id);
+      return message;
+    },
+  },
 };
 
 const server = new ApolloServer({
